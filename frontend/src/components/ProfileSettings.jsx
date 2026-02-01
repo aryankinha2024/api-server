@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import toast from 'react-hot-toast';
 import api from "../api/axios";
+import { safeLocalStorageGetJson, safeLocalStorageSetJson } from "../utils/safeJsonParse";
 
 const ProfileSettings = () => {
   const [name, setName] = useState("Alex Doe");
@@ -17,9 +18,8 @@ const ProfileSettings = () => {
 
   // Load user from localStorage
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      const userData = JSON.parse(userStr);
+    const userData = safeLocalStorageGetJson("user", null);
+    if (userData) {
       setUser(userData);
       setName(userData.name || "");
     }
@@ -77,7 +77,7 @@ const ProfileSettings = () => {
 
       if (hasChanges) {
         // Update localStorage
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+        safeLocalStorageSetJson('user', updatedUser);
         setUser(updatedUser);
         setSelectedFile(null);
         setPreviewUrl(null);
@@ -103,9 +103,8 @@ const ProfileSettings = () => {
   const handleCancel = () => {
     setSelectedFile(null);
     setPreviewUrl(null);
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      const userData = JSON.parse(userStr);
+    const userData = safeLocalStorageGetJson("user", null);
+    if (userData) {
       setName(userData.name || "");
     }
   };

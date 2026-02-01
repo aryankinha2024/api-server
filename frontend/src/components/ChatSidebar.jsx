@@ -2,15 +2,16 @@ import React, { useState, useEffect } from "react";
 import { MessageSquare, Users, Globe, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { LogoutUser } from "../api/axios";
+import { safeLocalStorageGetJson } from "../utils/safeJsonParse";
 
 const ChatSidebar = ({ activeTab, onTabChange }) => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")) || {});
+  const [user, setUser] = useState(safeLocalStorageGetJson("user", {}));
 
   // Listen for localStorage changes to update user avatar in real-time
   useEffect(() => {
     const handleStorageChange = () => {
-      const updatedUser = JSON.parse(localStorage.getItem("user")) || {};
+      const updatedUser = safeLocalStorageGetJson("user", {});
       setUser(updatedUser);
     };
 

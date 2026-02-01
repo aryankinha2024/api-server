@@ -1,5 +1,6 @@
 import axios from "axios";
 import socket from "../socket/index.js";
+import { safeLocalStorageSetJson } from "../utils/safeJsonParse.js";
 
 // Create axios instance with defaults
 const api = axios.create({
@@ -119,7 +120,7 @@ export const LoginUser = async (userData) => {
   const { accessToken, user } = res.data;
 
   localStorage.setItem("accessToken", accessToken);
-  localStorage.setItem("user", JSON.stringify(user));
+  safeLocalStorageSetJson("user", user);
 
   return res;
 };

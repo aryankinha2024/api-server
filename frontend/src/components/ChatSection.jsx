@@ -8,6 +8,7 @@ import {
 import toast from 'react-hot-toast';
 import api from "../api/axios";
 import socket from "../socket/index";
+import { safeLocalStorageGetJson, isValidUserObject } from "../utils/safeJsonParse";
 
 const ChatSection = ({ selectedRoom, onRoomLoaded }) => {
   const navigate = useNavigate();
@@ -30,26 +31,21 @@ const ChatSection = ({ selectedRoom, onRoomLoaded }) => {
   useEffect(() => {
     const loadUser = () => {
       try {
-        const userStr = localStorage.getItem("user");
-        if (userStr) {
-          let userData = JSON.parse(userStr);
-          
-          if (userData && userData.id && !userData._id) {
-            userData._id = userData.id;
-          }
-          
-          // Validate user has required fields
-          if (!userData || !userData._id || !userData.name || !userData.email) {
-            console.error("Invalid user object in localStorage:", userData);
-            setUserError(true);
-            setUser(null);
-          } else {
-            setUser(userData);
-            setUserError(false);
-          }
-        } else {
+        const userData = safeLocalStorageGetJson("user", null);
+        
+        // Normalize id to _id if needed
+        if (userData && userData.id && !userData._id) {
+          userData._id = userData.id;
+        }
+        
+        // Validate user has required fields
+        if (!isValidUserObject(userData)) {
+          console.error("Invalid user object in localStorage:", userData);
           setUserError(true);
           setUser(null);
+        } else {
+          setUser(userData);
+          setUserError(false);
         }
       } catch (error) {
         console.error("Error parsing user from localStorage:", error);
