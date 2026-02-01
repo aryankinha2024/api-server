@@ -1,9 +1,22 @@
-# Build stage
-FROM node:18-alpine AS builder
+# Build frontend stage
+FROM node:18-alpine AS frontend-builder
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY frontend/package*.json ./frontend/
+
+RUN cd frontend && npm ci
+
+COPY frontend/ ./frontend/
+
+RUN cd frontend && npm run build
+
+# Build backend stage
+FROM node:18-alpine AS backend-builder
+
+WORKDIR /app/backend
+
+COPY backend/package*.json ./
 
 RUN npm ci --only=production
 
@@ -14,14 +27,17 @@ WORKDIR /app
 
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
 
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
-COPY --chown=nodejs:nodejs . .
+# Copy backend node_modules and code
+COPY --from=backend-builder --chown=nodejs:nodejs /app/backend/node_modules ./backend/node_modules
+COPY --chown=nodejs:nodejs backend/ ./backend/
+
+# Copy built frontend into backend/public
+COPY --chown=nodejs:nodejs --from=frontend-builder /app/frontend/dist ./backend/public
 
 USER nodejs
 
-EXPOSE 3000
+EXPOSE 5000
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+WORKDIR /app/backend
 
 CMD ["npm", "start"]

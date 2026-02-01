@@ -5,9 +5,8 @@ on:
     branches:
       - main
     paths:
-      - 'server.js'
-      - 'package*.json'
-      - 'index.html'
+      - 'backend/**'
+      - 'frontend/**'
       - 'Dockerfile'
       - '.dockerignore'
       - '.github/workflows/docker-build.yml'
